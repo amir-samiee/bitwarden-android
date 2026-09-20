@@ -68,7 +68,7 @@ fun UserStateJson.toUpdatedUserStateJson(
         forcePasswordResetReason = forcePasswordResetReason,
         avatarColorHex = syncProfile.avatarColor,
         stamp = syncProfile.securityStamp,
-        hasPremiumPersonally = syncProfile.isPremium,
+        hasPremiumPersonally = true,
         hasPremiumFromOrganization = syncProfile.isPremiumFromOrganization,
         isTwoFactorEnabled = syncProfile.isTwoFactorEnabled,
         creationDate = syncProfile.creationDate,
