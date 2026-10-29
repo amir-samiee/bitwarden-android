@@ -104,10 +104,10 @@ jobs:
           keyAlias:bitwarden-beta \
           keyPassword:$PLAY_BETA_KEY_PASSWORD
 
-      - name: Generate debug Play Store APKs
-        if: ${{ (matrix.variant != 'prod') && (matrix.artifact == 'apk') }}
-        run: |
-          bundle exec fastlane assembleDebugApks
+      # - name: Generate debug Play Store APKs
+      #   if: ${{ (matrix.variant != 'prod') && (matrix.artifact == 'apk') }}
+      #   run: |
+      #     bundle exec fastlane assembleDebugApks
 
       - name: Upload to GitHub Artifacts - prod.apk
         if: ${{ (matrix.variant == 'prod') && (matrix.artifact == 'apk') }}
