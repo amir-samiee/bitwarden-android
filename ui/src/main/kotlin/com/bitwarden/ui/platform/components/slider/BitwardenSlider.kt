@@ -24,16 +24,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.bitwarden.ui.platform.base.util.cardStyle
 import com.bitwarden.ui.platform.base.util.nullableTestTag
@@ -53,6 +57,8 @@ import com.bitwarden.ui.platform.theme.BitwardenTheme
  * user interaction or not.
  * @param cardStyle Indicates the type of card style to be applied.
  * @param modifier The [Modifier] to be applied to this radio button.
+ * @param interactionSource A [MutableInteractionSource] for observing and emitting interactions
+ * for this component.
  * @param sliderTag The option test tag for the slider component.
  * @param valueTag The option test tag for the value field component.
  */
@@ -65,6 +71,7 @@ fun BitwardenSlider(
     onValueChange: (value: Int, isUserInteracting: Boolean) -> Unit,
     cardStyle: CardStyle,
     modifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     sliderTag: String? = null,
     valueTag: String? = null,
 ) {
@@ -75,9 +82,22 @@ fun BitwardenSlider(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .defaultMinSize(minHeight = 60.dp)
-            .cardStyle(cardStyle = cardStyle, paddingEnd = 16.dp)
+            .cardStyle(
+                cardStyle = cardStyle,
+                paddingEnd = 16.dp,
+                interactionSource = interactionSource,
+            )
             .semantics(mergeDescendants = true) {},
     ) {
+        val layoutDirection = LocalLayoutDirection.current
+        val sliderDelta = remember(layoutDirection) {
+            if (layoutDirection == LayoutDirection.Ltr) {
+                1
+            } else {
+                -1
+            }
+        }
+
         TextField(
             value = sliderValue.toString(),
             textStyle = BitwardenTheme.typography.bodyLarge,
@@ -97,16 +117,17 @@ fun BitwardenSlider(
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             colors = bitwardenTextFieldColors(),
+            interactionSource = interactionSource,
             modifier = Modifier
                 .onPreviewKeyEvent { keyEvent ->
-                    when (keyEvent.key) {
-                        Key.DirectionUp -> {
-                            onValueChange(sliderValue + 1, true)
+                    keyEvent.type == KeyEventType.KeyDown && when (keyEvent.key) {
+                        Key.DirectionLeft -> {
+                            onValueChange(sliderValue - sliderDelta, true)
                             true
                         }
 
-                        Key.DirectionDown -> {
-                            onValueChange(sliderValue - 1, true)
+                        Key.DirectionRight -> {
+                            onValueChange(sliderValue + sliderDelta, true)
                             true
                         }
 
@@ -143,6 +164,7 @@ fun BitwardenSlider(
                     thumbTrackGapSize = 0.dp,
                 )
             },
+            interactionSource = interactionSource,
             modifier = Modifier
                 .focusProperties { canFocus = false }
                 .nullableTestTag(tag = sliderTag)
